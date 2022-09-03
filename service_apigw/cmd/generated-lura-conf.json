@@ -1,0 +1,133 @@
+{
+    "$id": "https://www.krakend.io/schema/v3.json",
+    "name": "service",
+    "endpoints": [
+        {
+            "endpoint": "/get_area_info",
+            "method": "GET",
+            "backend": [
+                {
+                    "url_pattern": "/v1/service_area/get_area_info",
+                    "method": "GET",
+                    "encoding": "no-op",
+                    "is_collection": false,
+                    "extra_config": {
+                        "plugin/http-client": {
+                            "name": "grpc-gateway-service-area",
+                            "endpoints": [
+                                "localhost:8082"
+                            ]
+                        }
+                    }
+                }
+            ],
+            "input_headers": [
+                "*"
+            ],
+            "input_query_strings": [
+                "*"
+            ],
+            "extra_config": {},
+            "output_encoding": "no-op"
+        },
+        {
+            "endpoint": "/register",
+            "method": "POST",
+            "backend": [
+                {
+                    "url_pattern": "/v1/service_auth/register",
+                    "method": "POST",
+                    "encoding": "no-op",
+                    "is_collection": false,
+                    "extra_config": {
+                        "plugin/http-client": {
+                            "name": "grpc-gateway-service-auth",
+                            "endpoints": [
+                                "localhost:8081"
+                            ]
+                        }
+                    }
+                }
+            ],
+            "input_headers": [
+                "*"
+            ],
+            "input_query_strings": [
+                "*"
+            ],
+            "extra_config": {},
+            "output_encoding": "no-op"
+        }
+    ],
+    "timeout": 3000000000,
+    "cache_ttl": 3600000000000,
+    "host": [
+        "http://localhost:8080"
+    ],
+    "port": 8080,
+    "version": 3,
+    "output_encoding": "json",
+    "extra_config": {
+        "auth/revoker": {
+            "n": 10000000,
+            "p": 1E-7,
+            "hash_name": "optimal",
+            "ttl": 1500,
+            "port": 1234,
+            "token_keys": [
+                "jti",
+                "did"
+            ]
+        },
+        "telemetry/logging": {
+            "level": "DEBUG",
+            "prefix": "[KRAKEND]",
+            "syslog": false,
+            "stdout": true,
+            "format": "custom",
+            "custom_format": "{\"timestamp\":\"%{time:2006-01-02T15:04:05.000+00:00}\", \"level\": \"%{level}\", \"message\": \"%{message}\", \"module\": \"%{module}\"}"
+        },
+        "security/cors": {
+            "allow_origins": [
+                "*"
+            ],
+            "allow_methods": [
+                "POST",
+                "GET",
+                "PUT",
+                "DELETE",
+                "PATCH",
+                "OPTIONS"
+            ],
+            "allow_headers": [
+                "Origin",
+                "Authorization",
+                "Content-Type",
+                "Access-Control-Allow-Origin",
+                "X-Securities-Request-PartnerID",
+                "X-Securities-Request-Timestamp",
+                "X-Securities-Signature",
+                "X-Securities-ID",
+                "Lang"
+            ],
+            "allow_credentials": false,
+            "expose_headers": [
+                "Content-Length"
+            ],
+            "max_age": "12h",
+            "debug": false
+        }
+    },
+    "disable_keep_alives": false,
+    "disable_compression": false,
+    "max_idle_conns": 0,
+    "max_idle_conns_per_host": 0,
+    "dialer_fallback_delay": 300000000,
+    "disable_strict_rest": false,
+    "plugin": {
+        "pattern": ".so",
+        "folder": "./dist/plugins/"
+    },
+    "debug": false,
+    "sequential_start": true
+}

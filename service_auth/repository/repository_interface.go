@@ -1,4 +1,4 @@
-//go:generate mockgen -source=repository_interface.go -destination=mock_repository.go -package=repository
+//go:generate.sh mockgen -source=repository_interface.go -destination=mock_repository.go -package=repository
 package repository
 
 import (

@@ -1,0 +1,20 @@
+type: google.api.Service
+config_version: 3
+
+http:
+  rules:
+    - selector: service_auth.ServiceAuth.Register
+      post: /v1/service_auth/register
+      body: "*"
+    - selector: service_auth.ServiceAuth.Login
+      post: /v1/service_auth/login
+      body: "*"
+    - selector: service_auth.ServiceAuth.RefreshAccessToken
+      post: /v1/service_auth/refresh_access_token
+      body: "*"
+    - selector: service_auth.ServiceAuth.VerifyRegister
+      post: /v1/service_auth/verify_register
+      body: "*"
+    - selector: service_auth.ServiceAuth.GetLoginHistories
+      post: /v1/service_area/get_login_histories
+      body: "*"

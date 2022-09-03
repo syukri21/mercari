@@ -24,7 +24,7 @@ func InitConfig() (model.Config, error) {
 	// APP
 	config.App = model.AppConfig{
 		Env:               viper.GetString(`APP_ENV`),
-		GRPCPort:          viper.GetInt(`APP_GRPC_AREA_AREA_PORT`),
+		GRPCPort:          viper.GetInt(`APP_GRPC_SERVICE_AREA_PORT`),
 		Timeout:           viper.GetInt(`APP_TIMEOUT`),
 		URL:               viper.GetString(`APP_URL`),
 		ActiveJWTCacheTTL: viper.GetInt64(`APP_ACTIVE_JWT_CACHE_TTL`),

@@ -1,0 +1,7 @@
+type: google.api.Service
+config_version: 3
+
+http:
+  rules:
+    - selector: service_area.ServiceArea.GetAreaInfo
+      get: /v1/service_area/get_area_info
