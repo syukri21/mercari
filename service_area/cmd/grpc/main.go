@@ -8,6 +8,7 @@ import (
 	"github.com/syukri21/mercari/common/initialize"
 	"github.com/syukri21/mercari/common/telemetry"
 	"github.com/syukri21/mercari/service_area/cmd/config"
+	"github.com/syukri21/mercari/service_area/repository/agent"
 	"github.com/syukri21/mercari/service_area/repository/redis"
 	areaGrpc "github.com/syukri21/mercari/service_area/transport/grpc"
 	"github.com/syukri21/mercari/service_area/usecase"
@@ -51,8 +52,9 @@ func main() {
 
 	//	Repository
 	redisRepo := redis.NewRepositoryRedis(redisPool, tel.Log)
+	agentRepo := agent.NewIKSRepository(tel.Log)
 
-	uc := usecase.NewAreaUsecase(tel.Log, redisRepo)
+	uc := usecase.NewAreaUsecase(tel.Log, redisRepo, agentRepo)
 
 	// Initialize GRPC
 	gRPCAddr := flag.String("grpc", fmt.Sprintf(":%d", serviceConfig.App.GRPCPort), "gRPC listen address")

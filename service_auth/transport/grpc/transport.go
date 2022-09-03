@@ -4,10 +4,12 @@ import (
 	"context"
 	kitgrpc "github.com/go-kit/kit/transport/grpc"
 	"github.com/syukri21/mercari/service_auth/constant"
+	"github.com/syukri21/mercari/service_auth/helper"
 	"github.com/syukri21/mercari/service_auth/model"
 	"github.com/syukri21/mercari/service_auth/transport/validation"
 	"github.com/syukri21/mercari/service_auth/usecase"
 	"google.golang.org/grpc/health/grpc_health_v1"
+	"time"
 )
 
 // HandlerMaker ...
@@ -52,7 +54,7 @@ func MakeHandler(oldCtx context.Context, usecase usecase.Auth, handlerMaker *Han
 			func(ctx context.Context, request interface{}) (response interface{}, err error) {
 				ctx = context.WithValue(ctx, "config", oldCtx.Value("config").(model.Config))
 				req := request.(*RefreshAccessTokenRequest)
-				session, err := validation.CheckSession(ctx)
+				session, err := helper.CheckSession(ctx)
 				if err != nil {
 					return nil, err
 				}
@@ -90,12 +92,13 @@ func MakeHandler(oldCtx context.Context, usecase usecase.Auth, handlerMaker *Han
 		getLoginHistories: kitgrpc.NewServer(
 			func(ctx context.Context, request interface{}) (response interface{}, err error) {
 				ctx = context.WithValue(ctx, "config", oldCtx.Value("config").(model.Config))
-				session, err := validation.CheckSession(ctx)
+				session, err := helper.CheckSession(ctx)
 				if err != nil {
 					return nil, err
 				}
 				req := request.(model.LoginHistoryRequest)
 				ctx = context.WithValue(ctx, "session", session)
+				req.Email = session.Email
 				return usecase.GetLoginHistories(ctx, req)
 			},
 			handlerMaker.decodeGetLoginHistories,
@@ -166,49 +169,66 @@ func (h *HandlerMaker) encodeRefreshAccessTokenResponse(ctx context.Context, r i
 
 // decodeLogoutRequest ...
 func (h *HandlerMaker) decodeLogoutRequest(ctx context.Context, r interface{}) (interface{}, error) {
-	req := r.(*RefreshAccessTokenRequest)
+	req := r.(*LogoutRequest)
 	return req, nil
 }
 
 // encodeLogoutResponse ...
 func (h *HandlerMaker) encodeLogoutResponse(ctx context.Context, r interface{}) (interface{}, error) {
-	req := r.(model.RefreshAccessToken)
-	return &RefreshAccessTokenResponse{
-		ActiveAccessToken: req.AccessToken,
-		Status:            constant.StatusOK,
-		Error:             "",
+	return &LogoutResponse{
+		Status: constant.StatusOK,
+		Error:  "",
 	}, nil
 }
 
 // decodeVerifyRegisterRequest ...
 func (h *HandlerMaker) decodeVerifyRegisterRequest(ctx context.Context, r interface{}) (interface{}, error) {
-	req := r.(*RefreshAccessTokenRequest)
-	return req, nil
+	req := r.(*VerifyRegisterRequest)
+	return model.VerifyRegisterRequest{
+		Email:       req.Email,
+		ActivateKey: req.ActivateKey,
+	}, nil
 }
 
 // encodeVerifyRegisterResponse ...
 func (h *HandlerMaker) encodeVerifyRegisterResponse(ctx context.Context, r interface{}) (interface{}, error) {
-	req := r.(model.RefreshAccessToken)
-	return &RefreshAccessTokenResponse{
-		ActiveAccessToken: req.AccessToken,
-		Status:            constant.StatusOK,
-		Error:             "",
+	return &VerifyRegisterResponse{
+		Email:       "",
+		ActivateKey: "",
 	}, nil
 }
 
 // decodeVerifyRegisterRequest ...
 func (h *HandlerMaker) decodeGetLoginHistories(ctx context.Context, r interface{}) (interface{}, error) {
-	req := r.(*RefreshAccessTokenRequest)
-	return req, nil
+	req := r.(*GetLoginHistoriesRequest)
+	var offset int
+	if req.Page == 1 {
+		offset = 0
+	} else {
+		offset = int(req.Page) * int(req.Limit)
+	}
+	return model.LoginHistoryRequest{
+		Limit:  int(req.Limit),
+		Offset: offset,
+	}, nil
 }
 
 // encodeVerifyRegisterResponse ...
 func (h *HandlerMaker) encodeGetLoginHistories(ctx context.Context, r interface{}) (interface{}, error) {
-	req := r.(model.RefreshAccessToken)
-	return &RefreshAccessTokenResponse{
-		ActiveAccessToken: req.AccessToken,
-		Status:            constant.StatusOK,
-		Error:             "",
+	req := r.(model.LoginHistoryResponse)
+	var data []*GetLoginHistoriesResponse_Data
+	for _, datum := range req.Data {
+		data = append(data, &GetLoginHistoriesResponse_Data{
+			Email:    datum.Email,
+			Username: datum.Username,
+			DeviceId: datum.DeviceId,
+			LoginAt:  datum.LoginAt.Format(time.RFC3339),
+		})
+	}
+
+	return &GetLoginHistoriesResponse{
+		Data:   data,
+		Status: constant.StatusOK,
 	}, nil
 }
 

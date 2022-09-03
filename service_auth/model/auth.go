@@ -78,10 +78,11 @@ type LoginHistoryResponse struct {
 }
 
 type LoginHistory struct {
+	ID        int          `json:"ID" db:"id"`
 	Email     string       `json:"email" db:"email"`
 	Username  string       `json:"username" db:"username"`
 	DeviceId  string       `json:"deviceId" db:"device_id"`
 	LoginAt   time.Time    `json:"loginAt" db:"login_at"`
 	CreatedAt time.Time    `json:"CreatedAt" db:"created_at"`
-	UpdateAt  sql.NullTime `json:"updateAt" db:"update_at"`
+	UpdateAt  sql.NullTime `json:"updateAt" db:"updated_at"`
 }

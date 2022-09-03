@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/syukri21/mercari/common/helper"
 	"github.com/syukri21/mercari/service_area/constant"
 	"github.com/syukri21/mercari/service_area/model"
 	"github.com/syukri21/mercari/service_area/repository"
@@ -25,6 +26,7 @@ type Area interface {
 type UsecaseArea struct {
 	Logger *log.Logger
 	Redis  repository.RedisRepository
+	Agent  repository.Agent
 }
 
 func (a *UsecaseArea) GetAreaInfo(ctx context.Context, areaType string, key string) (result model.AreaData, err error) {
@@ -50,15 +52,37 @@ func (a *UsecaseArea) GetAreaInfo(ctx context.Context, areaType string, key stri
 		span.SetStatus(codes.Error, err.Error())
 		return model.AreaData{}, errors.New(constantAuth.StatusNotFound)
 	}
-	err = json.Unmarshal([]byte(infoAll), &result.Data)
-	if err != nil {
-		return model.AreaData{}, errors.New(constantAuth.StatusNotFound)
+
+	if infoAll == "null" {
+		data, err := a.Agent.GetAreaData(ctx, key, areaType)
+		if err != nil {
+			span.RecordError(fmt.Errorf("a.Agent.GetAreaData err %v", err.Error()))
+			span.SetStatus(codes.Error, err.Error())
+			return model.AreaData{}, errors.New(constantAuth.StatusNotFound)
+		}
+		result.Data = data
+
+		jsonData, _ := json.Marshal(result.Data)
+		err = a.Redis.SaveAreaData(ctx, model.AreaRedis{
+			Key:   helper.BuildKey(areaType, key),
+			Value: string(jsonData),
+		})
+		if err != nil {
+			span.RecordError(fmt.Errorf("a.Agent.GetAreaData err %v", err.Error()))
+			span.SetStatus(codes.Error, err.Error())
+			return model.AreaData{}, errors.New(constantAuth.StatusNotFound)
+		}
+	} else {
+		err = json.Unmarshal([]byte(infoAll), &result.Data)
+		if err != nil {
+			return model.AreaData{}, errors.New(constantAuth.StatusNotFound)
+		}
 	}
 
 	return result, nil
 
 }
 
-func NewAreaUsecase(logger *log.Logger, redis repository.RedisRepository) Area {
-	return &UsecaseArea{Logger: logger, Redis: redis}
+func NewAreaUsecase(logger *log.Logger, redis repository.RedisRepository, agent repository.Agent) Area {
+	return &UsecaseArea{Logger: logger, Redis: redis, Agent: agent}
 }

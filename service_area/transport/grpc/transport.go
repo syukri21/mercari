@@ -5,6 +5,7 @@ import (
 	kitgrpc "github.com/go-kit/kit/transport/grpc"
 	"github.com/syukri21/mercari/service_area/model"
 	"github.com/syukri21/mercari/service_area/usecase"
+	"github.com/syukri21/mercari/service_auth/helper"
 	"github.com/syukri21/mercari/service_auth/transport/validation"
 	"google.golang.org/grpc/health/grpc_health_v1"
 )
@@ -23,7 +24,12 @@ func MakeHandler(oldCtx context.Context, usecase usecase.Area, handlerMaker *Han
 	return &GrpcServer{
 		getAreaInfo: kitgrpc.NewServer(
 			func(ctx context.Context, request interface{}) (response interface{}, err error) {
+				session, err := helper.CheckSession(ctx)
+				if err != nil {
+					return nil, err
+				}
 				ctx = context.WithValue(ctx, "config", oldCtx.Value("config").(model.Config))
+				ctx = context.WithValue(ctx, "session", session)
 				req := request.(model.GetAreaInfoRequest)
 				err = validator.Struct(req)
 				if err != nil {

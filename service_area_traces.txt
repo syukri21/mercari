@@ -1,0 +1,408 @@
+{
+	"Name": "GetAreaInfo",
+	"SpanContext": {
+		"TraceID": "ac23d9776b27a14c04199e8606fb17c2",
+		"SpanID": "ccfeff086cde0618",
+		"TraceFlags": "01",
+		"TraceState": "",
+		"Remote": false
+	},
+	"Parent": {
+		"TraceID": "00000000000000000000000000000000",
+		"SpanID": "0000000000000000",
+		"TraceFlags": "00",
+		"TraceState": "",
+		"Remote": false
+	},
+	"SpanKind": 1,
+	"StartTime": "0001-01-01T00:00:00Z",
+	"EndTime": "0001-01-01T00:00:00Z",
+	"Attributes": [
+		{
+			"Key": "Start Time",
+			"Value": {
+				"Type": "STRING",
+				"Value": "2022-09-05T00:07:05+07:00"
+			}
+		},
+		{
+			"Key": "End Time",
+			"Value": {
+				"Type": "STRING",
+				"Value": "2022-09-05T00:07:06+07:00"
+			}
+		},
+		{
+			"Key": "Takes Time",
+			"Value": {
+				"Type": "STRING",
+				"Value": "581.039994ms"
+			}
+		}
+	],
+	"Events": null,
+	"Links": null,
+	"Status": {
+		"Code": "Unset",
+		"Description": ""
+	},
+	"DroppedAttributes": 0,
+	"DroppedEvents": 0,
+	"DroppedLinks": 0,
+	"ChildSpanCount": 0,
+	"Resource": [
+		{
+			"Key": "environment",
+			"Value": {
+				"Type": "STRING",
+				"Value": "demo"
+			}
+		},
+		{
+			"Key": "service.name",
+			"Value": {
+				"Type": "STRING",
+				"Value": "mercari"
+			}
+		},
+		{
+			"Key": "service.version",
+			"Value": {
+				"Type": "STRING",
+				"Value": "v0.1.0"
+			}
+		},
+		{
+			"Key": "telemetry.sdk.language",
+			"Value": {
+				"Type": "STRING",
+				"Value": "go"
+			}
+		},
+		{
+			"Key": "telemetry.sdk.name",
+			"Value": {
+				"Type": "STRING",
+				"Value": "opentelemetry"
+			}
+		},
+		{
+			"Key": "telemetry.sdk.version",
+			"Value": {
+				"Type": "STRING",
+				"Value": "1.9.0"
+			}
+		}
+	],
+	"InstrumentationLibrary": {
+		"Name": "SERVICE_AREA",
+		"Version": "",
+		"SchemaURL": ""
+	}
+}
+{
+	"Name": "GetAreaInfo",
+	"SpanContext": {
+		"TraceID": "cf9f9a92a4c85dfd87359718a499b608",
+		"SpanID": "9aa43e3e5e012bdd",
+		"TraceFlags": "01",
+		"TraceState": "",
+		"Remote": false
+	},
+	"Parent": {
+		"TraceID": "00000000000000000000000000000000",
+		"SpanID": "0000000000000000",
+		"TraceFlags": "00",
+		"TraceState": "",
+		"Remote": false
+	},
+	"SpanKind": 1,
+	"StartTime": "0001-01-01T00:00:00Z",
+	"EndTime": "0001-01-01T00:00:00Z",
+	"Attributes": [
+		{
+			"Key": "Start Time",
+			"Value": {
+				"Type": "STRING",
+				"Value": "2022-09-05T00:07:08+07:00"
+			}
+		},
+		{
+			"Key": "End Time",
+			"Value": {
+				"Type": "STRING",
+				"Value": "2022-09-05T00:07:08+07:00"
+			}
+		},
+		{
+			"Key": "Takes Time",
+			"Value": {
+				"Type": "STRING",
+				"Value": "380.148µs"
+			}
+		}
+	],
+	"Events": null,
+	"Links": null,
+	"Status": {
+		"Code": "Unset",
+		"Description": ""
+	},
+	"DroppedAttributes": 0,
+	"DroppedEvents": 0,
+	"DroppedLinks": 0,
+	"ChildSpanCount": 0,
+	"Resource": [
+		{
+			"Key": "environment",
+			"Value": {
+				"Type": "STRING",
+				"Value": "demo"
+			}
+		},
+		{
+			"Key": "service.name",
+			"Value": {
+				"Type": "STRING",
+				"Value": "mercari"
+			}
+		},
+		{
+			"Key": "service.version",
+			"Value": {
+				"Type": "STRING",
+				"Value": "v0.1.0"
+			}
+		},
+		{
+			"Key": "telemetry.sdk.language",
+			"Value": {
+				"Type": "STRING",
+				"Value": "go"
+			}
+		},
+		{
+			"Key": "telemetry.sdk.name",
+			"Value": {
+				"Type": "STRING",
+				"Value": "opentelemetry"
+			}
+		},
+		{
+			"Key": "telemetry.sdk.version",
+			"Value": {
+				"Type": "STRING",
+				"Value": "1.9.0"
+			}
+		}
+	],
+	"InstrumentationLibrary": {
+		"Name": "SERVICE_AREA",
+		"Version": "",
+		"SchemaURL": ""
+	}
+}
+{
+	"Name": "GetAreaInfo",
+	"SpanContext": {
+		"TraceID": "c3306d31a4b12080906de37d7b0e9a24",
+		"SpanID": "6868c4e80b7f55af",
+		"TraceFlags": "01",
+		"TraceState": "",
+		"Remote": false
+	},
+	"Parent": {
+		"TraceID": "00000000000000000000000000000000",
+		"SpanID": "0000000000000000",
+		"TraceFlags": "00",
+		"TraceState": "",
+		"Remote": false
+	},
+	"SpanKind": 1,
+	"StartTime": "0001-01-01T00:00:00Z",
+	"EndTime": "0001-01-01T00:00:00Z",
+	"Attributes": [
+		{
+			"Key": "Start Time",
+			"Value": {
+				"Type": "STRING",
+				"Value": "2022-09-05T00:07:09+07:00"
+			}
+		},
+		{
+			"Key": "End Time",
+			"Value": {
+				"Type": "STRING",
+				"Value": "2022-09-05T00:07:09+07:00"
+			}
+		},
+		{
+			"Key": "Takes Time",
+			"Value": {
+				"Type": "STRING",
+				"Value": "566.904µs"
+			}
+		}
+	],
+	"Events": null,
+	"Links": null,
+	"Status": {
+		"Code": "Unset",
+		"Description": ""
+	},
+	"DroppedAttributes": 0,
+	"DroppedEvents": 0,
+	"DroppedLinks": 0,
+	"ChildSpanCount": 0,
+	"Resource": [
+		{
+			"Key": "environment",
+			"Value": {
+				"Type": "STRING",
+				"Value": "demo"
+			}
+		},
+		{
+			"Key": "service.name",
+			"Value": {
+				"Type": "STRING",
+				"Value": "mercari"
+			}
+		},
+		{
+			"Key": "service.version",
+			"Value": {
+				"Type": "STRING",
+				"Value": "v0.1.0"
+			}
+		},
+		{
+			"Key": "telemetry.sdk.language",
+			"Value": {
+				"Type": "STRING",
+				"Value": "go"
+			}
+		},
+		{
+			"Key": "telemetry.sdk.name",
+			"Value": {
+				"Type": "STRING",
+				"Value": "opentelemetry"
+			}
+		},
+		{
+			"Key": "telemetry.sdk.version",
+			"Value": {
+				"Type": "STRING",
+				"Value": "1.9.0"
+			}
+		}
+	],
+	"InstrumentationLibrary": {
+		"Name": "SERVICE_AREA",
+		"Version": "",
+		"SchemaURL": ""
+	}
+}
+{
+	"Name": "GetAreaInfo",
+	"SpanContext": {
+		"TraceID": "59558b23dfc1e545f22d86780cb780c6",
+		"SpanID": "345830ea001fbcee",
+		"TraceFlags": "01",
+		"TraceState": "",
+		"Remote": false
+	},
+	"Parent": {
+		"TraceID": "00000000000000000000000000000000",
+		"SpanID": "0000000000000000",
+		"TraceFlags": "00",
+		"TraceState": "",
+		"Remote": false
+	},
+	"SpanKind": 1,
+	"StartTime": "0001-01-01T00:00:00Z",
+	"EndTime": "0001-01-01T00:00:00Z",
+	"Attributes": [
+		{
+			"Key": "Start Time",
+			"Value": {
+				"Type": "STRING",
+				"Value": "2022-09-05T00:07:13+07:00"
+			}
+		},
+		{
+			"Key": "End Time",
+			"Value": {
+				"Type": "STRING",
+				"Value": "2022-09-05T00:07:13+07:00"
+			}
+		},
+		{
+			"Key": "Takes Time",
+			"Value": {
+				"Type": "STRING",
+				"Value": "442.656µs"
+			}
+		}
+	],
+	"Events": null,
+	"Links": null,
+	"Status": {
+		"Code": "Unset",
+		"Description": ""
+	},
+	"DroppedAttributes": 0,
+	"DroppedEvents": 0,
+	"DroppedLinks": 0,
+	"ChildSpanCount": 0,
+	"Resource": [
+		{
+			"Key": "environment",
+			"Value": {
+				"Type": "STRING",
+				"Value": "demo"
+			}
+		},
+		{
+			"Key": "service.name",
+			"Value": {
+				"Type": "STRING",
+				"Value": "mercari"
+			}
+		},
+		{
+			"Key": "service.version",
+			"Value": {
+				"Type": "STRING",
+				"Value": "v0.1.0"
+			}
+		},
+		{
+			"Key": "telemetry.sdk.language",
+			"Value": {
+				"Type": "STRING",
+				"Value": "go"
+			}
+		},
+		{
+			"Key": "telemetry.sdk.name",
+			"Value": {
+				"Type": "STRING",
+				"Value": "opentelemetry"
+			}
+		},
+		{
+			"Key": "telemetry.sdk.version",
+			"Value": {
+				"Type": "STRING",
+				"Value": "1.9.0"
+			}
+		}
+	],
+	"InstrumentationLibrary": {
+		"Name": "SERVICE_AREA",
+		"Version": "",
+		"SchemaURL": ""
+	}
+}

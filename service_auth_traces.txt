@@ -1,0 +1,248 @@
+{
+	"Name": "Logout",
+	"SpanContext": {
+		"TraceID": "93e5d23bcaf8fba4aa890a48ca14d08c",
+		"SpanID": "14d451c6a7eca351",
+		"TraceFlags": "01",
+		"TraceState": "",
+		"Remote": false
+	},
+	"Parent": {
+		"TraceID": "00000000000000000000000000000000",
+		"SpanID": "0000000000000000",
+		"TraceFlags": "00",
+		"TraceState": "",
+		"Remote": false
+	},
+	"SpanKind": 1,
+	"StartTime": "0001-01-01T00:00:00Z",
+	"EndTime": "0001-01-01T00:00:00Z",
+	"Attributes": null,
+	"Events": null,
+	"Links": null,
+	"Status": {
+		"Code": "Unset",
+		"Description": ""
+	},
+	"DroppedAttributes": 0,
+	"DroppedEvents": 0,
+	"DroppedLinks": 0,
+	"ChildSpanCount": 0,
+	"Resource": [
+		{
+			"Key": "environment",
+			"Value": {
+				"Type": "STRING",
+				"Value": "demo"
+			}
+		},
+		{
+			"Key": "service.name",
+			"Value": {
+				"Type": "STRING",
+				"Value": "mercari"
+			}
+		},
+		{
+			"Key": "service.version",
+			"Value": {
+				"Type": "STRING",
+				"Value": "v0.1.0"
+			}
+		},
+		{
+			"Key": "telemetry.sdk.language",
+			"Value": {
+				"Type": "STRING",
+				"Value": "go"
+			}
+		},
+		{
+			"Key": "telemetry.sdk.name",
+			"Value": {
+				"Type": "STRING",
+				"Value": "opentelemetry"
+			}
+		},
+		{
+			"Key": "telemetry.sdk.version",
+			"Value": {
+				"Type": "STRING",
+				"Value": "1.9.0"
+			}
+		}
+	],
+	"InstrumentationLibrary": {
+		"Name": "SERVICE_AUTH",
+		"Version": "",
+		"SchemaURL": ""
+	}
+}
+{
+	"Name": "VerifyRegister",
+	"SpanContext": {
+		"TraceID": "7d875e3051468906e511081df151cf9c",
+		"SpanID": "643c2816f8e5389f",
+		"TraceFlags": "01",
+		"TraceState": "",
+		"Remote": false
+	},
+	"Parent": {
+		"TraceID": "00000000000000000000000000000000",
+		"SpanID": "0000000000000000",
+		"TraceFlags": "00",
+		"TraceState": "",
+		"Remote": false
+	},
+	"SpanKind": 1,
+	"StartTime": "0001-01-01T00:00:00Z",
+	"EndTime": "0001-01-01T00:00:00Z",
+	"Attributes": [
+		{
+			"Key": "request.Email",
+			"Value": {
+				"Type": "STRING",
+				"Value": "Hello@gmail.com"
+			}
+		}
+	],
+	"Events": null,
+	"Links": null,
+	"Status": {
+		"Code": "Unset",
+		"Description": ""
+	},
+	"DroppedAttributes": 0,
+	"DroppedEvents": 0,
+	"DroppedLinks": 0,
+	"ChildSpanCount": 0,
+	"Resource": [
+		{
+			"Key": "environment",
+			"Value": {
+				"Type": "STRING",
+				"Value": "demo"
+			}
+		},
+		{
+			"Key": "service.name",
+			"Value": {
+				"Type": "STRING",
+				"Value": "mercari"
+			}
+		},
+		{
+			"Key": "service.version",
+			"Value": {
+				"Type": "STRING",
+				"Value": "v0.1.0"
+			}
+		},
+		{
+			"Key": "telemetry.sdk.language",
+			"Value": {
+				"Type": "STRING",
+				"Value": "go"
+			}
+		},
+		{
+			"Key": "telemetry.sdk.name",
+			"Value": {
+				"Type": "STRING",
+				"Value": "opentelemetry"
+			}
+		},
+		{
+			"Key": "telemetry.sdk.version",
+			"Value": {
+				"Type": "STRING",
+				"Value": "1.9.0"
+			}
+		}
+	],
+	"InstrumentationLibrary": {
+		"Name": "SERVICE_AUTH",
+		"Version": "",
+		"SchemaURL": ""
+	}
+}
+{
+	"Name": "RefreshAccessToken",
+	"SpanContext": {
+		"TraceID": "8f6ddf192b3e109bc82b7cdfee871d5d",
+		"SpanID": "9cbd201f4b2c484d",
+		"TraceFlags": "01",
+		"TraceState": "",
+		"Remote": false
+	},
+	"Parent": {
+		"TraceID": "00000000000000000000000000000000",
+		"SpanID": "0000000000000000",
+		"TraceFlags": "00",
+		"TraceState": "",
+		"Remote": false
+	},
+	"SpanKind": 1,
+	"StartTime": "0001-01-01T00:00:00Z",
+	"EndTime": "0001-01-01T00:00:00Z",
+	"Attributes": null,
+	"Events": null,
+	"Links": null,
+	"Status": {
+		"Code": "Unset",
+		"Description": ""
+	},
+	"DroppedAttributes": 0,
+	"DroppedEvents": 0,
+	"DroppedLinks": 0,
+	"ChildSpanCount": 0,
+	"Resource": [
+		{
+			"Key": "environment",
+			"Value": {
+				"Type": "STRING",
+				"Value": "demo"
+			}
+		},
+		{
+			"Key": "service.name",
+			"Value": {
+				"Type": "STRING",
+				"Value": "mercari"
+			}
+		},
+		{
+			"Key": "service.version",
+			"Value": {
+				"Type": "STRING",
+				"Value": "v0.1.0"
+			}
+		},
+		{
+			"Key": "telemetry.sdk.language",
+			"Value": {
+				"Type": "STRING",
+				"Value": "go"
+			}
+		},
+		{
+			"Key": "telemetry.sdk.name",
+			"Value": {
+				"Type": "STRING",
+				"Value": "opentelemetry"
+			}
+		},
+		{
+			"Key": "telemetry.sdk.version",
+			"Value": {
+				"Type": "STRING",
+				"Value": "1.9.0"
+			}
+		}
+	],
+	"InstrumentationLibrary": {
+		"Name": "SERVICE_AUTH",
+		"Version": "",
+		"SchemaURL": ""
+	}
+}

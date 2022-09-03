@@ -12,4 +12,5 @@ type RedisRepository interface {
 
 type Agent interface {
 	GetALLAreaData(ctx context.Context, saveFunc model.SaveAreaDataRedis) error
+	GetAreaData(ctx context.Context, key string, areaType string) (result []model.AreaRedis, err error)
 }

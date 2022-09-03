@@ -3,8 +3,6 @@ package main
 import (
 	"context"
 	"github.com/robfig/cron/v3"
-	"os/signal"
-
 	"github.com/syukri21/mercari/common/helper"
 	"github.com/syukri21/mercari/common/initialize"
 	"github.com/syukri21/mercari/common/telemetry"
@@ -12,6 +10,7 @@ import (
 	"github.com/syukri21/mercari/service_area/repository/agent"
 	"github.com/syukri21/mercari/service_area/repository/redis"
 	"github.com/syukri21/mercari/service_area/usecase"
+	"os/signal"
 
 	"log"
 	"os"
@@ -60,7 +59,7 @@ func main() {
 	_, err = c.AddFunc(cronRun, func() {
 		tel.Log.Printf("Running uc.CronFillArea ...")
 		ctx = context.WithValue(ctx, "config", serviceConfig)
-		err := uc.CronFillArea(ctx)
+		err = uc.CronFillArea(ctx)
 		if err != nil {
 			tel.Log.Printf("Failed Retry uc.CronFillArea")
 		} else {
@@ -72,5 +71,4 @@ func main() {
 	sig := make(chan os.Signal)
 	signal.Notify(sig, os.Interrupt, os.Kill)
 	<-sig
-
 }

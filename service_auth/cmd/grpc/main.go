@@ -68,7 +68,7 @@ func main() {
 		tel.Log.Printf("address %s", *gRPCAddr)
 		tel.Log.Printf("gRPC server is listening")
 		ctx := context.Background()
-		ctx = context.WithValue(ctx, "serviceConfig", serviceConfig)
+		ctx = context.WithValue(ctx, "config", serviceConfig)
 
 		listener, errListener := net.Listen("tcp", *gRPCAddr)
 		if errListener != nil {
@@ -98,7 +98,5 @@ func main() {
 		tel.Log.Printf("Gracefully Stop")
 	}()
 
-	tel.Log.Printf("filename %s", filename)
-	tel.Log.Printf("method %s", method)
-	tel.Log.Printf("Error service auth reports")
+	log.Println(<-errChan)
 }

@@ -16,6 +16,7 @@ type Auth interface {
 	Logout(ctx context.Context, email string, activeToken string) (err error)
 	VerifyRegister(ctx context.Context, req model.VerifyRegisterRequest) (result model.VerifyRegisterResponse, err error)
 	GetLoginHistories(ctx context.Context, req model.LoginHistoryRequest) (result model.LoginHistoryResponse, err error)
+	CheckSession(ctx context.Context) (result model.CustomClaimData, err error)
 }
 
 type AuthUsecase struct {

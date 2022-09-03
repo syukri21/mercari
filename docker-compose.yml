@@ -1,0 +1,22 @@
+version: "3.8"
+
+services:
+  postgres:
+    image: postgres:11
+    restart: on-failure
+    ports:
+      - "15432:5432"
+    volumes:
+      - type: volume
+        source: postgres_volume
+        target: /var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+
+volumes:
+  postgres_volume:
+  app_http_volume:
+  app_grpc_volume:

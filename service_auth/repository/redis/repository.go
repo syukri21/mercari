@@ -40,7 +40,7 @@ func (r *RepositoryRedis) SaveLoginToken(ctx context.Context, refreshToken strin
 	if err != nil {
 		return errors.New(fmt.Sprintf("[SaveLoginToken] error when do HMSET to save login token. err : %s", err.Error()))
 	}
-	err = r.Client.Expire(ctx, key, 300*time.Second).Err()
+	err = r.Client.Expire(ctx, key, time.Hour*48).Err()
 	if err != nil {
 		return errors.New(fmt.Sprintf("[SaveLoginToken] error when do EXPIRE to set expiration redis. err : %s", err.Error()))
 	}

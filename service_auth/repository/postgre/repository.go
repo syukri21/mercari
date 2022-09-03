@@ -2,7 +2,9 @@ package postgre
 
 import (
 	"context"
+	"database/sql"
 	"errors"
+	"fmt"
 	"github.com/syukri21/mercari/service_auth/constant"
 	"log"
 	"time"
@@ -28,7 +30,15 @@ func (p *PostgreRepository) GetLoginHistories(ctx context.Context, req model.Log
 
 	for row.Next() {
 		history := model.LoginHistory{}
-		err := row.Scan(&history)
+		err := row.Scan(
+			&history.ID,
+			&history.Email,
+			&history.Username,
+			&history.DeviceId,
+			&history.LoginAt,
+			&history.CreatedAt,
+			&history.UpdateAt,
+		)
 		if err != nil {
 			return nil, err
 		}
@@ -39,7 +49,7 @@ func (p *PostgreRepository) GetLoginHistories(ctx context.Context, req model.Log
 
 func (p *PostgreRepository) CreateLoginHistory(ctx context.Context, req model.LoginHistory) error {
 	query := CreateLoginHistory
-	_, err := p.db.ExecContext(ctx, query, req)
+	_, err := p.db.NamedExecContext(ctx, query, req)
 	if err != nil {
 		return err
 	}
@@ -61,8 +71,8 @@ func (p *PostgreRepository) ValidateUser(ctx context.Context, email string, pin 
 	}
 
 	_, err = p.db.NamedExecContext(ctx, ActivateUser, map[string]interface{}{
-		"update_at": time.Now(),
-		"email":     email,
+		"updated_at": time.Now(),
+		"email":      email,
 	})
 	if err != nil {
 		p.l.Printf("[Error when get pin user] %s", err)
@@ -87,7 +97,11 @@ func (p *PostgreRepository) CreateUser(ctx context.Context, request model.Create
 func (p *PostgreRepository) GetUserByEmail(ctx context.Context, req model.LoginRequest) (user model.User, err error) {
 	query := GetUser
 
-	err = p.db.Select(&user, query, req.Email)
+	err = p.db.GetContext(ctx, &user, query, req.Email)
+	if err == sql.ErrNoRows {
+		return user, fmt.Errorf(constant.StatusUnauthorized)
+	}
+
 	if err != nil {
 		p.l.Printf("[Error when GetUser] %s", err)
 		return user, err

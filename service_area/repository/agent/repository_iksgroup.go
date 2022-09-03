@@ -50,17 +50,23 @@ func (I *IKSRepository) GetALLAreaData(ctx context.Context, saveFunc model.SaveA
 		go func(jobs <-chan JobFunc, wg *sync.WaitGroup, prov *map[string]model.Province, sub *[]model.AreaRedis) {
 			for job := range jobs {
 				func() {
-					defer wg.Done()
+					defer func() {
+						if r := recover(); r != nil {
+							fmt.Println("Recovered in f", r)
+						}
+						wg.Done()
+					}()
 					job(prov, sub)
 				}()
 			}
 		}(jobs, &wg, &provinces, &areaData)
 	}
 
+	I.l.Printf("Fetch City length: %v", len(data))
 	// fetch city
+	wg.Add(len(data))
 	for _, p := range data {
 		p := p
-		wg.Add(1)
 		jobs <- func(prov *map[string]model.Province, subDistrict *[]model.AreaRedis) {
 			data, _ = I.getCities(p.Key)
 			*subDistrict = append(areaData, data...)
@@ -73,41 +79,58 @@ func (I *IKSRepository) GetALLAreaData(ctx context.Context, saveFunc model.SaveA
 	}
 
 	wg.Wait()
+	I.l.Printf("Fetch Success length: %v")
 
 	// fetch areaData
-	for _, p := range areaData {
+	I.l.Printf("Fetch Districts length: %v", len(areaData))
+	tempAreaData := areaData
+	areaData = make([]model.AreaRedis, 0)
+	wg.Add(len(tempAreaData))
+	for _, p := range tempAreaData {
 		p := p
-		wg.Add(1)
 		jobs <- func(prov *map[string]model.Province, subDistrict *[]model.AreaRedis) {
 			rawData, _ := I.getDistricts(p.Key)
 			*subDistrict = append(areaData, rawData...)
 			data, _ := json.Marshal(rawData)
 			_ = saveFunc(ctx, model.AreaRedis{
-				Key:   helper.BuildKey(constant.District, p.Key),
+				Key:   helper.BuildKey(constant.City, p.Key),
 				Value: string(data),
 			})
 		}
 	}
 
 	wg.Wait()
+	I.l.Printf("Fetch Districts Success")
 
-	tempAreaData := areaData
-	areaData = make([]model.AreaRedis, 0)
-	for _, d := range tempAreaData {
-		wg.Add(1)
+	I.l.Printf("Fetch SubDistrict length: %v", len(areaData))
+	wg.Add(len(areaData))
+	for _, d := range areaData {
 		jobs <- func(prov *map[string]model.Province, subDistrict *[]model.AreaRedis) {
 			rawData, _ := I.getSubDistricts(d.Key)
 			data, _ := json.Marshal(rawData)
 			_ = saveFunc(ctx, model.AreaRedis{
-				Key:   helper.BuildKey(constant.SubDistrict, d.Key),
+				Key:   helper.BuildKey(constant.District, d.Key),
 				Value: string(data),
 			})
 		}
 	}
 
 	wg.Wait()
+	I.l.Printf("Fetch Districts Success")
 	return err
 
+}
+
+func (I *IKSRepository) GetAreaData(ctx context.Context, key string, areaType string) (result []model.AreaRedis, err error) {
+	switch areaType {
+	case constant.Province:
+		return I.getCities(key)
+	case constant.City:
+		return I.getDistricts(key)
+	case constant.District:
+		return I.getSubDistricts(key)
+	}
+	return result, err
 }
 
 func (I *IKSRepository) getProvinces() (data []model.AreaRedis, err error) {

@@ -26,7 +26,6 @@ func (a *AuthUsecase) Login(ctx context.Context, req model.LoginRequest) (result
 	}
 
 	if !helper.CompareHashAndPassword(user.Password, req.Password) {
-
 		a.Logger.Print("[Not Match CompareHashAndPassword]")
 		span.SetStatus(codes.Unset, constant.StatusUnauthorized)
 		return model.LoginResponse{}, errors.New(constant.StatusUnauthorized)
@@ -41,7 +40,7 @@ func (a *AuthUsecase) Login(ctx context.Context, req model.LoginRequest) (result
 	at, rt, err := a.generateJWTToken(tokenClaim)
 	if err != nil {
 		a.Logger.Printf("[generateJWTToken] error; %s", err)
-		span.SetStatus(codes.Error, constant.StatusSystemError)
+		span.SetStatus(codes.Error, err.Error())
 		return model.LoginResponse{}, errors.New(constant.StatusSystemError)
 	}
 
@@ -93,7 +92,7 @@ func (a *AuthUsecase) RefreshAccessToken(ctx context.Context, deviceId string, e
 	tokenClaim := model.GenerateCustomClaim(model.RequestCustomClaim{
 		Username: decoded.Username,
 		DeviceID: decoded.DeviceID,
-		Email:    deviceId,
+		Email:    decoded.Email,
 	})
 
 	at, rt, err := a.generateJWTToken(tokenClaim)
@@ -149,7 +148,7 @@ func (a *AuthUsecase) GetLoginHistories(ctx context.Context, req model.LoginHist
 	histories, err := a.Postgre.GetLoginHistories(ctx, req)
 	if err != nil {
 		a.Logger.Printf("[a.Redis.GetLoginHistories] error; %s", err)
-		span.SetStatus(codes.Error, constant.StatusSystemError)
+		span.SetStatus(codes.Error, err.Error())
 		return result, errors.New(constant.StatusSystemError)
 	}
 
@@ -181,7 +180,7 @@ func (a *AuthUsecase) generateJWTToken(claim *model.CustomClaim) (at string, rt 
 
 	jwkGet := model.JWKGet{
 		Key:       a.config.App.JWTKey,
-		Algorithm: jose.RS512,
+		Algorithm: jose.HS256,
 	}
 
 	accessToken, err = a.JWT.GenerateJWTToken(plainToken, jwkGet)
