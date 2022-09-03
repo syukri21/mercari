@@ -23,20 +23,22 @@ type CityRawData struct {
 	} `json:"data"`
 }
 
+type DistrictRaw struct {
+	Output    string            `json:"output"`
+	Generator string            `json:"generator"`
+	Data      []DistrictRawData `json:"data"`
+}
+
 type DistrictRawData struct {
-	Output    string `json:"output"`
-	Generator string `json:"generator"`
-	Data      []struct {
-		ID   string `json:"kecamatan_id"`
-		Name string `json:"kecamatan_nama"`
-	} `json:"data"`
+	Key  string `json:"kecamatan_id"`
+	Name string `json:"kecamatan_nama"`
 }
 
 type SubDistrictRawData struct {
 	Output    string `json:"output"`
 	Generator string `json:"generator"`
 	Data      []struct {
-		ID   string `json:"kelurahan_id"`
+		Key  string `json:"kelurahan_id"`
 		Name string `json:"kelurahan_nama"`
 	} `json:"data"`
 }

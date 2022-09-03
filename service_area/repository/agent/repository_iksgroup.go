@@ -18,7 +18,7 @@ import (
 
 const (
 	IKSURL      = "https://api.iksgroup.co.id/apilokasi"
-	TotalWorker = 20
+	TotalWorker = 500
 )
 
 type IKSRepository struct {
@@ -30,6 +30,7 @@ func (I *IKSRepository) GetALLAreaData(ctx context.Context, saveFunc model.SaveA
 
 	// Get All provinces
 	provinces := make(map[string]model.Province)
+	districts := make([]DistrictRawData, 0)
 
 	err := I.getProvinces(&provinces)
 	if err != nil {
@@ -44,28 +45,25 @@ func (I *IKSRepository) GetALLAreaData(ctx context.Context, saveFunc model.SaveA
 	})
 
 	// dispatcher
-	jobs := make(chan func(*map[string]model.Province))
+	type JobFunc func(*map[string]model.Province, *[]DistrictRawData)
+	jobs := make(chan JobFunc)
 
 	for i := 0; i < TotalWorker; i++ {
-		i := i
-		go func(cityJobs <-chan func(*map[string]model.Province), wg *sync.WaitGroup, prov *map[string]model.Province) {
-			counter := 1
-			for job := range cityJobs {
+		go func(jobs <-chan JobFunc, wg *sync.WaitGroup, prov *map[string]model.Province, sub *[]DistrictRawData) {
+			for job := range jobs {
 				func() {
 					defer wg.Done()
-					job(prov)
-					I.l.Printf("Worker no := %v and counter := %v \n", i, counter)
+					job(prov, sub)
 				}()
-				counter++
 			}
-		}(jobs, &wg, &provinces)
+		}(jobs, &wg, &provinces, &districts)
 	}
 
 	// fetch city
 	for _, p := range provinces {
 		p := p
 		wg.Add(1)
-		jobs <- func(prov *map[string]model.Province) {
+		jobs <- func(prov *map[string]model.Province, subDistrict *[]DistrictRawData) {
 			err = I.getCities(prov, p.Key)
 			cities, _ := json.Marshal(p.Cities)
 			_ = saveFunc(ctx, model.AreaRedis{
@@ -82,9 +80,10 @@ func (I *IKSRepository) GetALLAreaData(ctx context.Context, saveFunc model.SaveA
 			p := p
 			c := citi
 			wg.Add(1)
-			jobs <- func(prov *map[string]model.Province) {
-				err = I.getDistricts(&provinces, p.Key, c.Key)
-				data, _ := json.Marshal(provinces[p.Key].Cities[c.Key])
+			jobs <- func(prov *map[string]model.Province, subDistrict *[]DistrictRawData) {
+				rawData, _ := I.getDistricts(c.Key)
+				data, _ := json.Marshal(provinces[p.Key].Cities[c.Key].Districts)
+				*subDistrict = append(districts, rawData.Data...)
 				_ = saveFunc(ctx, model.AreaRedis{
 					Key:   helper.BuildKey(constant.District, p.Key),
 					Value: string(data),
@@ -92,25 +91,22 @@ func (I *IKSRepository) GetALLAreaData(ctx context.Context, saveFunc model.SaveA
 			}
 		}
 	}
+
 	wg.Wait()
-	for _, p := range provinces {
-		for _, c := range p.Cities {
-			for _, d := range c.Districts {
-				d := d
-				p := p
-				c := c
-				wg.Add(1)
-				jobs <- func(prov *map[string]model.Province) {
-					err = I.getSubDistricts(&provinces, p.Key, c.Key, d.Key)
-					data, _ := json.Marshal(provinces[p.Key].Cities[c.Key].Districts[d.Key])
-					_ = saveFunc(ctx, model.AreaRedis{
-						Key:   helper.BuildKey(constant.SubDistrict, p.Key),
-						Value: string(data),
-					})
-				}
-			}
+
+	for _, d := range districts {
+		wg.Add(1)
+		jobs <- func(prov *map[string]model.Province, subDistrict *[]DistrictRawData) {
+			rawData, _ := I.getSubDistricts(d.Key)
+			data, _ := json.Marshal(rawData)
+			_ = saveFunc(ctx, model.AreaRedis{
+				Key:   helper.BuildKey(constant.SubDistrict, d.Key),
+				Value: string(data),
+			})
 		}
 	}
+
+	wg.Wait()
 	return err
 
 }
@@ -185,73 +181,54 @@ func (I *IKSRepository) getCities(provinces *map[string]model.Province, key stri
 	return
 }
 
-func (I *IKSRepository) getDistricts(provinces *map[string]model.Province, provinceKey string, cityKey string) (err error) {
+func (I *IKSRepository) getDistricts(cityKey string) (results DistrictRaw, err error) {
 	url := fmt.Sprintf("%s/%s?%s=%s", IKSURL, constant.District, constant.City, cityKey)
 	request, err := http.NewRequest(http.MethodGet, url, bytes.NewBuffer([]byte{}))
 	if err != nil {
-		return err
+		return results, err
 	}
 
 	httpClient := &http.Client{Transport: &http.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: true}}}
 	resp, err := httpClient.Do(request)
 	if err != nil {
-		return err
+		return results, err
 	}
 	defer func(Body io.ReadCloser) {
 		_ = Body.Close()
 	}(resp.Body)
 
-	results := DistrictRawData{}
+	results = DistrictRaw{}
 	err = json.NewDecoder(resp.Body).Decode(&results)
 	if err != nil {
-		return err
+		return results, err
 	}
 
-	temp := *provinces
-	for _, datum := range results.Data {
-		temp[provinceKey].Cities[cityKey].Districts[datum.ID] = model.District{
-			Name:         datum.Name,
-			Key:          datum.ID,
-			SubDistricts: make(map[string]model.SubDistrict),
-		}
-	}
-
-	*provinces = temp
 	return
 }
 
-func (I *IKSRepository) getSubDistricts(provinces *map[string]model.Province, provinceKey string, cityKey string, districtKey string) (err error) {
+func (I *IKSRepository) getSubDistricts(districtKey string) (results SubDistrictRawData, err error) {
 	url := fmt.Sprintf("%s/%s?%s=%s", IKSURL, constant.SubDistrict, constant.District, districtKey)
 	request, err := http.NewRequest(http.MethodGet, url, bytes.NewBuffer([]byte{}))
 	if err != nil {
-		return err
+		return results, err
 	}
 
 	httpClient := &http.Client{Transport: &http.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: true}}}
 	resp, err := httpClient.Do(request)
 	if err != nil {
-		return err
+		return results, err
 	}
 	defer func(Body io.ReadCloser) {
 		_ = Body.Close()
 	}(resp.Body)
 
-	results := SubDistrictRawData{}
+	results = SubDistrictRawData{}
 	err = json.NewDecoder(resp.Body).Decode(&results)
 	if err != nil {
-		return err
+		return results, err
 	}
 
-	temp := *provinces
-	for _, datum := range results.Data {
-		temp[provinceKey].Cities[cityKey].Districts[districtKey].SubDistricts[datum.ID] = model.SubDistrict{
-			Name: datum.Name,
-			Key:  datum.ID,
-		}
-	}
-
-	*provinces = temp
-	return
+	return results, nil
 }
 
 func NewIKSRepository(l *log.Logger) repository.Agent {
