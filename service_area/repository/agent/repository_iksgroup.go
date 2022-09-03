@@ -30,7 +30,7 @@ func (I *IKSRepository) GetALLAreaData(ctx context.Context, saveFunc model.SaveA
 
 	// Get All provinces
 	provinces := make(map[string]model.Province)
-	districts := make([]DistrictRawData, 0)
+	districts := make([]model.AreaRedis, 0)
 
 	data, err := I.getProvinces()
 	if err != nil {
@@ -43,11 +43,11 @@ func (I *IKSRepository) GetALLAreaData(ctx context.Context, saveFunc model.SaveA
 	})
 
 	// dispatcher
-	type JobFunc func(*map[string]model.Province, *[]DistrictRawData)
+	type JobFunc func(*map[string]model.Province, *[]model.AreaRedis)
 	jobs := make(chan JobFunc)
 
 	for i := 0; i < TotalWorker; i++ {
-		go func(jobs <-chan JobFunc, wg *sync.WaitGroup, prov *map[string]model.Province, sub *[]DistrictRawData) {
+		go func(jobs <-chan JobFunc, wg *sync.WaitGroup, prov *map[string]model.Province, sub *[]model.AreaRedis) {
 			for job := range jobs {
 				func() {
 					defer wg.Done()
@@ -58,14 +58,14 @@ func (I *IKSRepository) GetALLAreaData(ctx context.Context, saveFunc model.SaveA
 	}
 
 	// fetch city
-	for _, p := range provinces {
+	for _, p := range data {
 		p := p
 		wg.Add(1)
-		jobs <- func(prov *map[string]model.Province, subDistrict *[]DistrictRawData) {
-			err = I.getCities(prov, p.Key)
-			cities, _ := json.Marshal(p.Cities)
+		jobs <- func(prov *map[string]model.Province, subDistrict *[]model.AreaRedis) {
+			data, _ = I.getCities(p.Key)
+			cities, _ := json.Marshal(data)
 			_ = saveFunc(ctx, model.AreaRedis{
-				Key:   helper.BuildKey(constant.City, p.Key),
+				Key:   helper.BuildKey(constant.Province, p.Key),
 				Value: string(cities),
 			})
 		}
@@ -78,10 +78,10 @@ func (I *IKSRepository) GetALLAreaData(ctx context.Context, saveFunc model.SaveA
 			p := p
 			c := citi
 			wg.Add(1)
-			jobs <- func(prov *map[string]model.Province, subDistrict *[]DistrictRawData) {
+			jobs <- func(prov *map[string]model.Province, subDistrict *[]model.AreaRedis) {
 				rawData, _ := I.getDistricts(c.Key)
-				data, _ := json.Marshal(provinces[p.Key].Cities[c.Key].Districts)
-				*subDistrict = append(districts, rawData.Data...)
+				*subDistrict = append(districts, rawData...)
+				data, _ := json.Marshal(rawData)
 				_ = saveFunc(ctx, model.AreaRedis{
 					Key:   helper.BuildKey(constant.District, p.Key),
 					Value: string(data),
@@ -94,7 +94,7 @@ func (I *IKSRepository) GetALLAreaData(ctx context.Context, saveFunc model.SaveA
 
 	for _, d := range districts {
 		wg.Add(1)
-		jobs <- func(prov *map[string]model.Province, subDistrict *[]DistrictRawData) {
+		jobs <- func(prov *map[string]model.Province, subDistrict *[]model.AreaRedis) {
 			rawData, _ := I.getSubDistricts(d.Key)
 			data, _ := json.Marshal(rawData)
 			_ = saveFunc(ctx, model.AreaRedis{
@@ -140,17 +140,17 @@ func (I *IKSRepository) getProvinces() (data []model.AreaRedis, err error) {
 	return data, nil
 }
 
-func (I *IKSRepository) getCities(provinces *map[string]model.Province, key string) (err error) {
+func (I *IKSRepository) getCities(key string) (data []model.AreaRedis, err error) {
 	url := fmt.Sprintf("%s/%s?%s=%s", IKSURL, constant.City, constant.Province, key)
 	request, err := http.NewRequest(http.MethodGet, url, bytes.NewBuffer([]byte{}))
 	if err != nil {
-		return err
+		return data, err
 	}
 
 	httpClient := &http.Client{Transport: &http.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: true}}}
 	resp, err := httpClient.Do(request)
 	if err != nil {
-		return err
+		return data, err
 	}
 	defer func(Body io.ReadCloser) {
 		_ = Body.Close()
@@ -159,70 +159,77 @@ func (I *IKSRepository) getCities(provinces *map[string]model.Province, key stri
 	results := CityRawData{}
 	err = json.NewDecoder(resp.Body).Decode(&results)
 	if err != nil {
-		return err
+		return data, err
 	}
 
-	temp := *provinces
 	for _, datum := range results.Data {
-		temp[key].Cities[datum.ID] = model.City{
-			Name:      datum.Name,
-			Key:       datum.ID,
-			Districts: make(map[string]model.District),
-		}
+		data = append(data, model.AreaRedis{
+			Value: datum.Name,
+			Key:   datum.ID,
+		})
 	}
 
-	*provinces = temp
 	return
 }
 
-func (I *IKSRepository) getDistricts(cityKey string) (results DistrictRaw, err error) {
+func (I *IKSRepository) getDistricts(cityKey string) (data []model.AreaRedis, err error) {
 	url := fmt.Sprintf("%s/%s?%s=%s", IKSURL, constant.District, constant.City, cityKey)
 	request, err := http.NewRequest(http.MethodGet, url, bytes.NewBuffer([]byte{}))
 	if err != nil {
-		return results, err
+		return data, err
 	}
 
 	httpClient := &http.Client{Transport: &http.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: true}}}
 	resp, err := httpClient.Do(request)
 	if err != nil {
-		return results, err
+		return data, err
 	}
 	defer func(Body io.ReadCloser) {
 		_ = Body.Close()
 	}(resp.Body)
 
-	results = DistrictRaw{}
+	results := DistrictRaw{}
 	err = json.NewDecoder(resp.Body).Decode(&results)
-	if err != nil {
-		return results, err
+
+	for _, datum := range results.Data {
+		data = append(data, model.AreaRedis{
+			Value: datum.Name,
+			Key:   datum.Key,
+		})
 	}
 
 	return
 }
 
-func (I *IKSRepository) getSubDistricts(districtKey string) (results SubDistrictRawData, err error) {
+func (I *IKSRepository) getSubDistricts(districtKey string) (data []model.AreaRedis, err error) {
 	url := fmt.Sprintf("%s/%s?%s=%s", IKSURL, constant.SubDistrict, constant.District, districtKey)
 	request, err := http.NewRequest(http.MethodGet, url, bytes.NewBuffer([]byte{}))
 	if err != nil {
-		return results, err
+		return data, err
 	}
 
 	httpClient := &http.Client{Transport: &http.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: true}}}
 	resp, err := httpClient.Do(request)
 	if err != nil {
-		return results, err
+		return data, err
 	}
 	defer func(Body io.ReadCloser) {
 		_ = Body.Close()
 	}(resp.Body)
 
-	results = SubDistrictRawData{}
+	results := SubDistrictRawData{}
 	err = json.NewDecoder(resp.Body).Decode(&results)
 	if err != nil {
-		return results, err
+		return data, err
 	}
 
-	return results, nil
+	for _, datum := range results.Data {
+		data = append(data, model.AreaRedis{
+			Value: datum.Name,
+			Key:   datum.Key,
+		})
+	}
+	return data, nil
 }
 
 func NewIKSRepository(l *log.Logger) repository.Agent {
