@@ -2,8 +2,9 @@ package main
 
 import (
 	"context"
+	"github.com/robfig/cron/v3"
+	"os/signal"
 
-	"github.com/avast/retry-go/v4"
 	"github.com/syukri21/mercari/common/helper"
 	"github.com/syukri21/mercari/common/initialize"
 	"github.com/syukri21/mercari/common/telemetry"
@@ -14,7 +15,6 @@ import (
 
 	"log"
 	"os"
-	"time"
 )
 
 var (
@@ -56,22 +56,21 @@ func main() {
 	agentRepo := agent.NewIKSRepository(tel.Log)
 
 	uc := usecase.NewCronAreaUsecase(agentRepo, tel.Log, redisRepo)
-	//c := cron.New()
-	//
-	//_, err = c.AddFunc(cronRun, func() {
-	err = retry.Do(func() error {
+	c := cron.New()
+	_, err = c.AddFunc(cronRun, func() {
 		tel.Log.Printf("Running uc.CronFillArea ...")
 		ctx = context.WithValue(ctx, "config", serviceConfig)
 		err := uc.CronFillArea(ctx)
-		return err
-	}, retry.DelayType(func(n uint, err error, config *retry.Config) time.Duration {
-		// apply a default exponential back off strategy
-		tel.Log.Printf("Retry uc.CronFillArea ...")
+		if err != nil {
+			tel.Log.Printf("Failed Retry uc.CronFillArea")
+		} else {
+			tel.Log.Printf("Success  uc.CronFillArea")
+		}
+	})
 
-		return retry.BackOffDelay(n, err, config)
-	}))
-	//})
-
-	tel.Log.Printf("Done uc.CronFillArea ...")
+	go c.Start()
+	sig := make(chan os.Signal)
+	signal.Notify(sig, os.Interrupt, os.Kill)
+	<-sig
 
 }

@@ -41,29 +41,18 @@ func (a *UsecaseArea) GetAreaInfo(ctx context.Context, areaType string, key stri
 	result = model.AreaData{
 		Key:   key,
 		Value: "",
-		Data:  make(map[string]model.AreaRedis),
+		Data:  make([]model.AreaRedis, 0),
 	}
 
-	if key != "" {
-		result.Value, _, _ = a.Redis.GetAreaInfo(ctx, areaType, key, false)
-		if err != nil {
-			span.RecordError(fmt.Errorf("a.Redis.GetAreaInfo err %v", err.Error()))
-			span.SetStatus(codes.Error, err.Error())
-			return model.AreaData{}, errors.New(constantAuth.StatusNotFound)
-		}
+	infoAll, _, err := a.Redis.GetAreaInfo(ctx, areaType, key)
+	if err != nil {
+		span.RecordError(fmt.Errorf("a.Redis.GetAreaInfo err %v", err.Error()))
+		span.SetStatus(codes.Error, err.Error())
+		return model.AreaData{}, errors.New(constantAuth.StatusNotFound)
 	}
-
-	if areaType != constant.SubDistrict {
-		infoAll, _, err := a.Redis.GetAreaInfo(ctx, areaType, key, true)
-		if err != nil {
-			span.RecordError(fmt.Errorf("a.Redis.GetAreaInfo err %v", err.Error()))
-			span.SetStatus(codes.Error, err.Error())
-			return model.AreaData{}, errors.New(constantAuth.StatusNotFound)
-		}
-		err = json.Unmarshal([]byte(infoAll), &result.Data)
-		if err != nil {
-			return model.AreaData{}, errors.New(constantAuth.StatusNotFound)
-		}
+	err = json.Unmarshal([]byte(infoAll), &result.Data)
+	if err != nil {
+		return model.AreaData{}, errors.New(constantAuth.StatusNotFound)
 	}
 
 	return result, nil

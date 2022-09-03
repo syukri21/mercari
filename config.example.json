@@ -23,5 +23,5 @@
   "DB_POSTGRESQL_DB_ROOT_CERT": "postgres",
 
 
-  "CRON_FILL_AREA": "0 0 1 * * *"
+  "CRON_FILL_AREA": "0 18 0 * * *"
 }

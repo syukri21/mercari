@@ -31,8 +31,8 @@ func (r RepositoryRedis) SaveAreaData(ctx context.Context, area model.AreaRedis)
 	return nil
 }
 
-func (r RepositoryRedis) GetAreaInfo(ctx context.Context, areaType string, key string, isAll bool) (name string, id string, err error) {
-	key = helper.GetKey(areaType, key, isAll)
+func (r RepositoryRedis) GetAreaInfo(ctx context.Context, areaType string, key string) (name string, id string, err error) {
+	key = helper.GetKey(areaType, key)
 	hget := r.Client.HGet(ctx, constant.AreaRedisKey, key)
 
 	var value string

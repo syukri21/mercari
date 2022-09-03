@@ -7,7 +7,7 @@ import (
 
 type RedisRepository interface {
 	SaveAreaData(ctx context.Context, area model.AreaRedis) error
-	GetAreaInfo(ctx context.Context, areaType string, key string, isAll bool) (name string, id string, err error)
+	GetAreaInfo(ctx context.Context, areaType string, key string) (name string, id string, err error)
 }
 
 type Agent interface {

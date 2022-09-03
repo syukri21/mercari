@@ -35,9 +35,9 @@ type AreaRedis struct {
 }
 
 type AreaData struct {
-	Key   string               `json:"Key"`
-	Value string               `json:"Name"`
-	Data  map[string]AreaRedis `json:"data"`
+	Key   string      `json:"Key"`
+	Value string      `json:"Name"`
+	Data  []AreaRedis `json:"data"`
 }
 
 type SaveAreaDataRedis = func(ctx context.Context, area AreaRedis) error

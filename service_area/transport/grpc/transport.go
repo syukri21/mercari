@@ -52,10 +52,10 @@ func (h *HandlerMaker) encodeGetAreaInfoResponse(ctx context.Context, r interfac
 	req := r.(model.AreaData)
 	data := make([]*GetAreaInfoResponse_Data, 0)
 
-	for key, value := range req.Data {
+	for _, value := range req.Data {
 		data = append(data, &GetAreaInfoResponse_Data{
 			Name: value.Value,
-			Id:   key,
+			Id:   value.Key,
 		})
 	}
 	return &GetAreaInfoResponse{

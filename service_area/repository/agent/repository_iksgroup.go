@@ -32,16 +32,14 @@ func (I *IKSRepository) GetALLAreaData(ctx context.Context, saveFunc model.SaveA
 	provinces := make(map[string]model.Province)
 	districts := make([]DistrictRawData, 0)
 
-	err := I.getProvinces(&provinces)
+	data, err := I.getProvinces()
 	if err != nil {
 		return err
 	}
-
-	prov, _ := json.Marshal(provinces)
-	p, _ := json.Marshal(prov)
+	prov, _ := json.Marshal(data)
 	_ = saveFunc(ctx, model.AreaRedis{
-		Key:   helper.BuildKey(constant.Province),
-		Value: string(p),
+		Key:   constant.Province,
+		Value: string(prov),
 	})
 
 	// dispatcher
@@ -111,17 +109,17 @@ func (I *IKSRepository) GetALLAreaData(ctx context.Context, saveFunc model.SaveA
 
 }
 
-func (I *IKSRepository) getProvinces(provinces *map[string]model.Province) (err error) {
+func (I *IKSRepository) getProvinces() (data []model.AreaRedis, err error) {
 	url := fmt.Sprintf("%s/%s", IKSURL, constant.Province)
 	request, err := http.NewRequest(http.MethodGet, url, bytes.NewBuffer([]byte{}))
 	if err != nil {
-		return err
+		return data, err
 	}
 
 	httpClient := &http.Client{Transport: &http.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: true}}}
 	resp, err := httpClient.Do(request)
 	if err != nil {
-		return err
+		return data, err
 	}
 	defer func(Body io.ReadCloser) {
 		_ = Body.Close()
@@ -130,20 +128,16 @@ func (I *IKSRepository) getProvinces(provinces *map[string]model.Province) (err 
 	results := ProvinceRawData{}
 	err = json.NewDecoder(resp.Body).Decode(&results)
 	if err != nil {
-		return err
+		return data, err
 	}
 
-	temp := *provinces
-	for _, datum := range results.Data {
-		temp[datum.ID] = model.Province{
-			Name:   datum.Name,
-			Key:    datum.ID,
-			Cities: make(map[string]model.City),
-		}
+	for _, d := range results.Data {
+		data = append(data, model.AreaRedis{
+			Key:   d.ID,
+			Value: d.Name,
+		})
 	}
-
-	*provinces = temp
-	return
+	return data, nil
 }
 
 func (I *IKSRepository) getCities(provinces *map[string]model.Province, key string) (err error) {
