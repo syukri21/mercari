@@ -30,7 +30,7 @@ func (I *IKSRepository) GetALLAreaData(ctx context.Context, saveFunc model.SaveA
 
 	// Get All provinces
 	provinces := make(map[string]model.Province)
-	districts := make([]model.AreaRedis, 0)
+	areaData := make([]model.AreaRedis, 0)
 
 	data, err := I.getProvinces()
 	if err != nil {
@@ -54,7 +54,7 @@ func (I *IKSRepository) GetALLAreaData(ctx context.Context, saveFunc model.SaveA
 					job(prov, sub)
 				}()
 			}
-		}(jobs, &wg, &provinces, &districts)
+		}(jobs, &wg, &provinces, &areaData)
 	}
 
 	// fetch city
@@ -63,6 +63,7 @@ func (I *IKSRepository) GetALLAreaData(ctx context.Context, saveFunc model.SaveA
 		wg.Add(1)
 		jobs <- func(prov *map[string]model.Province, subDistrict *[]model.AreaRedis) {
 			data, _ = I.getCities(p.Key)
+			*subDistrict = append(areaData, data...)
 			cities, _ := json.Marshal(data)
 			_ = saveFunc(ctx, model.AreaRedis{
 				Key:   helper.BuildKey(constant.Province, p.Key),
@@ -70,29 +71,29 @@ func (I *IKSRepository) GetALLAreaData(ctx context.Context, saveFunc model.SaveA
 			})
 		}
 	}
+
 	wg.Wait()
 
-	// fetch districts
-	for _, p := range provinces {
-		for _, citi := range p.Cities {
-			p := p
-			c := citi
-			wg.Add(1)
-			jobs <- func(prov *map[string]model.Province, subDistrict *[]model.AreaRedis) {
-				rawData, _ := I.getDistricts(c.Key)
-				*subDistrict = append(districts, rawData...)
-				data, _ := json.Marshal(rawData)
-				_ = saveFunc(ctx, model.AreaRedis{
-					Key:   helper.BuildKey(constant.District, p.Key),
-					Value: string(data),
-				})
-			}
+	// fetch areaData
+	for _, p := range areaData {
+		p := p
+		wg.Add(1)
+		jobs <- func(prov *map[string]model.Province, subDistrict *[]model.AreaRedis) {
+			rawData, _ := I.getDistricts(p.Key)
+			*subDistrict = append(areaData, rawData...)
+			data, _ := json.Marshal(rawData)
+			_ = saveFunc(ctx, model.AreaRedis{
+				Key:   helper.BuildKey(constant.District, p.Key),
+				Value: string(data),
+			})
 		}
 	}
 
 	wg.Wait()
 
-	for _, d := range districts {
+	tempAreaData := areaData
+	areaData = make([]model.AreaRedis, 0)
+	for _, d := range tempAreaData {
 		wg.Add(1)
 		jobs <- func(prov *map[string]model.Province, subDistrict *[]model.AreaRedis) {
 			rawData, _ := I.getSubDistricts(d.Key)
