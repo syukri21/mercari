@@ -2,10 +2,12 @@ package jwt
 
 import (
 	"encoding/base64"
+	"errors"
+	"github.com/square/go-jose/v3"
+	"github.com/syukri21/mercari/service_auth/constant"
 	"log"
 
 	gojwt "github.com/golang-jwt/jwt/v4"
-	"github.com/square/go-jose/v3"
 	"github.com/square/go-jose/v3/jwt"
 
 	"github.com/syukri21/mercari/service_auth/model"
@@ -28,7 +30,10 @@ func (f *JWTRepository) DecodeJWTToken(token string) (*model.CustomClaimData, er
 		return nil, err
 	}
 
-	claim, _ := rt.Claims.(*model.PlainToken)
+	claim, ok := rt.Claims.(*model.PlainToken)
+	if !ok {
+		return nil, errors.New(constant.StatusUnauthorized)
+	}
 	return &claim.Data, nil
 }
 
@@ -38,13 +43,16 @@ func (f *JWTRepository) GenerateJWTToken(plainToken model.PlainToken, jwtGet mod
 		log.Printf("error decoding. err %s", err.Error())
 		return "", err
 	}
-	sig, err := jose.NewSigner(jose.SigningKey{Algorithm: jose.SignatureAlgorithm(jwtGet.Algorithm), Key: sDec}, (&jose.SignerOptions{}).WithHeader("kid", jwtGet.Type))
+
+	sig, err := jose.NewSigner(jose.SigningKey{Algorithm: jwtGet.Algorithm, Key: sDec}, &jose.SignerOptions{})
 	if err != nil {
 		return "", err
 	}
+
 	raw, err := jwt.Signed(sig).Claims(plainToken).CompactSerialize()
 	if err != nil {
 		return "", err
 	}
+
 	return raw, nil
 }

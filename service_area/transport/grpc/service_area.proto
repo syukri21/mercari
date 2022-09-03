@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+option go_package = "./;grpc";
+
+package grpc;
+
+service ServiceArea {
+  rpc GetAreaInfo(GetAreaRequest) returns (GetAreaInfoResponse);
+}
+
+message GetAreaRequest{
+  string area_type = 1;
+  string key = 2;
+}
+
+message GetAreaInfoResponse{
+  message Data {
+    string name = 1;
+    string id = 2;
+  }
+
+  string name = 1;
+  string id = 2;
+  repeated Data data = 3;
+}

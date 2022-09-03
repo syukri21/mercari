@@ -6,30 +6,28 @@ import (
 	"fmt"
 	"github.com/syukri21/mercari/common/helper"
 	"github.com/syukri21/mercari/common/initialize"
+	"github.com/syukri21/mercari/common/telemetry"
+	"github.com/syukri21/mercari/service_area/cmd/config"
+	"github.com/syukri21/mercari/service_area/repository/redis"
+	areaGrpc "github.com/syukri21/mercari/service_area/transport/grpc"
+	"github.com/syukri21/mercari/service_area/usecase"
+	"google.golang.org/grpc"
 	"google.golang.org/grpc/health/grpc_health_v1"
 	"log"
 	"net"
 	"os"
 	"os/signal"
 	"syscall"
-
-	"github.com/syukri21/mercari/common/telemetry"
-	"github.com/syukri21/mercari/service_auth/cmd/config"
-	"github.com/syukri21/mercari/service_auth/repository/jwt"
-	"github.com/syukri21/mercari/service_auth/repository/postgre"
-	"github.com/syukri21/mercari/service_auth/repository/redis"
-	authGrpc "github.com/syukri21/mercari/service_auth/transport/grpc"
-	"github.com/syukri21/mercari/service_auth/usecase"
-	"google.golang.org/grpc"
 )
 
 var (
 	filename      = "cmd/grpc/main.go"
 	method        = "main"
-	traceFilename = "service_auth_traces.txt"
+	traceFilename = "service_area_traces.txt"
 )
 
 func main() {
+	ctx := context.Background()
 	// Open Config
 	serviceConfig, errConfig := config.InitConfig()
 	helper.CheckError(errConfig)
@@ -50,14 +48,11 @@ func main() {
 
 	//	Initialization
 	redisPool := initialize.NewRedis(serviceConfig.Redis)
-	dbPostgrePool := initialize.NewPostSqlServer(serviceConfig.Postgre)
 
 	//	Repository
-	postgreRepo := postgre.NewPostgreRepository(tel.Log, dbPostgrePool)
-	redisRepo := redis.NewRepositoryRedis(tel.Log, redisPool)
-	jwtRepo := jwt.NewJWTRepository()
+	redisRepo := redis.NewRepositoryRedis(redisPool, tel.Log)
 
-	usecaseAuth := usecase.NewAuthUsecase(postgreRepo, jwtRepo, redisRepo, tel.Log, serviceConfig)
+	uc := usecase.NewAreaUsecase(tel.Log, redisRepo)
 
 	// Initialize GRPC
 	gRPCAddr := flag.String("grpc", fmt.Sprintf(":%d", serviceConfig.App.GRPCPort), "gRPC listen address")
@@ -67,8 +62,7 @@ func main() {
 		tel.Log.Printf("transport grpc")
 		tel.Log.Printf("address %s", *gRPCAddr)
 		tel.Log.Printf("gRPC server is listening")
-		ctx := context.Background()
-		ctx = context.WithValue(ctx, "serviceConfig", serviceConfig)
+		ctx = context.WithValue(ctx, "config", serviceConfig)
 
 		listener, errListener := net.Listen("tcp", *gRPCAddr)
 		if errListener != nil {
@@ -76,13 +70,13 @@ func main() {
 			return
 		}
 
-		handlerMaker := authGrpc.NewHandlerMaker()
-		handler := authGrpc.MakeHandler(ctx, usecaseAuth, handlerMaker)
+		handlerMaker := areaGrpc.NewHandlerMaker()
+		handler := areaGrpc.MakeHandler(ctx, uc, handlerMaker)
 
 		grpcServer := grpc.NewServer()
-		authGrpc.RegisterServiceAuthServer(grpcServer, handler)
+		areaGrpc.RegisterServiceAreaServer(grpcServer, handler)
 
-		healthService := authGrpc.NewHealthChecker()
+		healthService := areaGrpc.NewHealthChecker()
 		grpc_health_v1.RegisterHealthServer(grpcServer, healthService)
 
 		errChan <- grpcServer.Serve(listener)
@@ -98,7 +92,5 @@ func main() {
 		tel.Log.Printf("Gracefully Stop")
 	}()
 
-	tel.Log.Printf("filename %s", filename)
-	tel.Log.Printf("method %s", method)
-	tel.Log.Printf("Error service auth reports")
+	log.Println(<-errChan)
 }
